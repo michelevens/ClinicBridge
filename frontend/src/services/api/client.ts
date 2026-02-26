@@ -1,6 +1,7 @@
 import type { ApiError } from '@/types';
 
-const BASE_URL = '/api';
+const BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const BACKEND_URL = BASE_URL.replace(/\/api$/, '');
 
 class HttpError extends Error {
   status: number;
@@ -45,7 +46,15 @@ async function request<T>(
   return data as T;
 }
 
+async function getCsrfCookie(): Promise<void> {
+  await fetch(`${BACKEND_URL}/sanctum/csrf-cookie`, {
+    credentials: 'include',
+  });
+}
+
 export const api = {
+  csrfCookie: getCsrfCookie,
+
   get<T>(endpoint: string): Promise<T> {
     return request<T>(endpoint, { method: 'GET' });
   },

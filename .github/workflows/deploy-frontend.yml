@@ -33,6 +33,8 @@ jobs:
 
       - run: npm ci
       - run: npx vite build --base=/ClinicBridge/
+        env:
+          VITE_API_URL: https://laravel-backend-production-37fb.up.railway.app/api
 
       - name: Add 404 fallback for SPA routing
         run: cp dist/index.html dist/404.html

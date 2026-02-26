@@ -62,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function login(credentials: LoginCredentials) {
+    await api.csrfCookie();
     const data = await api.post<AuthResponse>('/auth/login', credentials);
     setState({
       user: data.user,
@@ -72,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function register(data: RegisterData) {
+    await api.csrfCookie();
     const response = await api.post<AuthResponse>('/auth/register', data);
     setState({
       user: response.user,
