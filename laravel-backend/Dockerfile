@@ -28,9 +28,6 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-RUN php artisan route:cache \
-    && php artisan view:cache
-
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
 EXPOSE 8000
