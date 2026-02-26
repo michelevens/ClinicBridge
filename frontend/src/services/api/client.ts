@@ -1,7 +1,7 @@
 import type { ApiError } from '@/types';
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api';
-const BACKEND_URL = BASE_URL.replace(/\/api$/, '');
+const TOKEN_KEY = 'clinicbridge_token';
 
 class HttpError extends Error {
   status: number;
@@ -15,22 +15,35 @@ class HttpError extends Error {
   }
 }
 
+function getToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+function setToken(token: string): void {
+  localStorage.setItem(TOKEN_KEY, token);
+}
+
+function clearToken(): void {
+  localStorage.removeItem(TOKEN_KEY);
+}
+
 async function request<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
   const url = `${BASE_URL}${endpoint}`;
+  const token = getToken();
 
   const headers: HeadersInit = {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     ...options.headers,
   };
 
   const response = await fetch(url, {
     ...options,
     headers,
-    credentials: 'include',
   });
 
   if (response.status === 204) {
@@ -40,20 +53,19 @@ async function request<T>(
   const data = await response.json();
 
   if (!response.ok) {
+    if (response.status === 401) {
+      clearToken();
+    }
     throw new HttpError(response.status, data);
   }
 
   return data as T;
 }
 
-async function getCsrfCookie(): Promise<void> {
-  await fetch(`${BACKEND_URL}/sanctum/csrf-cookie`, {
-    credentials: 'include',
-  });
-}
-
 export const api = {
-  csrfCookie: getCsrfCookie,
+  setToken,
+  clearToken,
+  getToken,
 
   get<T>(endpoint: string): Promise<T> {
     return request<T>(endpoint, { method: 'GET' });

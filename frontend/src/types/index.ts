@@ -218,4 +218,5 @@ export interface RegisterData {
 export interface AuthResponse {
   user: User;
   practice: Practice | null;
+  token: string;
 }

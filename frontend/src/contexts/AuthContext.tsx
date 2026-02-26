@@ -15,6 +15,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
+    // Only check auth if we have a stored token
+    if (!api.getToken()) {
+      setState({
+        user: null,
+        practice: null,
+        isAuthenticated: false,
+        isLoading: false,
+      });
+      return;
+    }
     api.get<AuthResponse>('/auth/me').then(
       (data) => {
         if (!cancelled) {
@@ -28,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       () => {
         if (!cancelled) {
+          api.clearToken();
           setState({
             user: null,
             practice: null,
@@ -52,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading: false,
       });
     } catch {
+      api.clearToken();
       setState({
         user: null,
         practice: null,
@@ -62,8 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function login(credentials: LoginCredentials) {
-    await api.csrfCookie();
     const data = await api.post<AuthResponse>('/auth/login', credentials);
+    api.setToken(data.token);
     setState({
       user: data.user,
       practice: data.practice,
@@ -73,8 +85,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function register(data: RegisterData) {
-    await api.csrfCookie();
     const response = await api.post<AuthResponse>('/auth/register', data);
+    api.setToken(response.token);
     setState({
       user: response.user,
       practice: response.practice,
@@ -84,13 +96,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function logout() {
-    await api.post('/auth/logout');
-    setState({
-      user: null,
-      practice: null,
-      isAuthenticated: false,
-      isLoading: false,
-    });
+    try {
+      await api.post('/auth/logout');
+    } finally {
+      api.clearToken();
+      setState({
+        user: null,
+        practice: null,
+        isAuthenticated: false,
+        isLoading: false,
+      });
+    }
   }
 
   return (

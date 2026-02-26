@@ -6,7 +6,7 @@ use App\Models\Practice;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
@@ -40,11 +40,12 @@ class AuthController extends Controller
             'role' => 'practice_admin',
         ]);
 
-        Auth::login($user);
+        $token = $user->createToken('auth')->plainTextToken;
 
         return response()->json([
             'user' => $user,
             'practice' => $practice,
+            'token' => $token,
         ], 201);
     }
 
@@ -63,7 +64,7 @@ class AuthController extends Controller
             ], 429);
         }
 
-        if (! Auth::attempt($validated)) {
+        if (! $user || ! Hash::check($validated['password'], $user->password)) {
             if ($user) {
                 $user->increment('failed_login_attempts');
                 $maxAttempts = config('clinicbridge.session.max_failed_attempts', 5);
@@ -78,7 +79,6 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $user = Auth::user();
         $user->update([
             'failed_login_attempts' => 0,
             'locked_until' => null,
@@ -86,20 +86,20 @@ class AuthController extends Controller
             'last_login_ip' => $request->ip(),
         ]);
 
-        $request->session()->regenerate();
+        // Revoke old tokens
+        $user->tokens()->delete();
+        $token = $user->createToken('auth')->plainTextToken;
 
         return response()->json([
             'user' => $user,
             'practice' => $user->practice,
+            'token' => $token,
         ]);
     }
 
     public function logout(Request $request): JsonResponse
     {
-        Auth::guard('web')->logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out.']);
     }
@@ -120,7 +120,6 @@ class AuthController extends Controller
             'email' => ['required', 'email'],
         ]);
 
-        // Always return success to avoid user enumeration
         return response()->json([
             'message' => 'If an account exists, a reset link has been sent.',
         ]);
