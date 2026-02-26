@@ -14,8 +14,6 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
 
-        $middleware->statefulApi();
-
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
             'practice' => \App\Http\Middleware\EnsurePracticeAccess::class,
