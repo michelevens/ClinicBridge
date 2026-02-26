@@ -208,7 +208,7 @@ class DemoSeeder extends Seeder
                 'appointment_type_id' => $type->id,
                 'date' => $date,
                 'start_time' => sprintf('%02d:00', $hour),
-                'end_time' => sprintf('%02d:%02d', $hour, $type->duration_minutes),
+                'end_time' => Carbon::createFromTime($hour, 0)->addMinutes($type->duration_minutes)->format('H:i'),
                 'status' => $status,
                 'type' => $type->is_telehealth ? 'telehealth' : 'in_person',
                 'reason' => ['Anxiety management', 'Depression follow-up', 'CBT session', 'Medication review', 'Couples therapy', 'Trauma processing', 'Initial intake'][$i],
