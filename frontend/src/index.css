@@ -1,0 +1,148 @@
+@import "tailwindcss";
+
+/* ─── Clinical Trust Design System ─── */
+
+@theme {
+  /* Clinical Blue (Primary) — trust, professionalism */
+  --color-clinical-50: #f0f7fb;
+  --color-clinical-100: #dcedf5;
+  --color-clinical-200: #b8daea;
+  --color-clinical-300: #85c0d9;
+  --color-clinical-400: #4a9fc2;
+  --color-clinical-500: #0c6b9a;
+  --color-clinical-600: #0a5a82;
+  --color-clinical-700: #094a6b;
+  --color-clinical-800: #073b55;
+  --color-clinical-900: #052d42;
+  --color-clinical-950: #031c2a;
+
+  /* Healing Teal (Secondary) — healthcare, growth */
+  --color-teal-50: #f0fdfa;
+  --color-teal-100: #ccfbf1;
+  --color-teal-200: #99f6e4;
+  --color-teal-300: #5eead4;
+  --color-teal-400: #2dd4bf;
+  --color-teal-500: #14b8a6;
+  --color-teal-600: #0d9488;
+  --color-teal-700: #0f766e;
+  --color-teal-800: #115e59;
+  --color-teal-900: #134e4a;
+  --color-teal-950: #042f2e;
+
+  /* Vitality Green (Success) */
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-300: #86efac;
+  --color-success-400: #4ade80;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+  --color-success-800: #166534;
+  --color-success-900: #14532d;
+
+  /* Alert Amber (Warning) */
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-200: #fde68a;
+  --color-warning-300: #fcd34d;
+  --color-warning-400: #fbbf24;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+  --color-warning-800: #92400e;
+  --color-warning-900: #78350f;
+
+  /* Critical Red (Danger) */
+  --color-danger-50: #fef2f2;
+  --color-danger-100: #fee2e2;
+  --color-danger-200: #fecaca;
+  --color-danger-300: #fca5a5;
+  --color-danger-400: #f87171;
+  --color-danger-500: #ef4444;
+  --color-danger-600: #dc2626;
+  --color-danger-700: #b91c1c;
+  --color-danger-800: #991b1b;
+  --color-danger-900: #7f1d1d;
+
+  /* Shadows */
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --shadow-premium: 0 20px 60px rgba(0, 0, 0, 0.12);
+  --shadow-clinical: 0 4px 16px rgba(12, 107, 154, 0.15);
+
+  /* Font */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Animation */
+  --animate-fade-in: fade-in 0.3s ease-out;
+  --animate-slide-up: slide-up 0.3s ease-out;
+  --animate-slide-down: slide-down 0.2s ease-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Base Styles ─── */
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 font-sans;
+}
+
+/* Dark mode */
+.dark body {
+  @apply bg-slate-950 text-slate-100;
+}
+
+/* ─── Utility Classes ─── */
+
+@utility glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+@utility glass-clinical {
+  background: rgba(12, 107, 154, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(12, 107, 154, 0.1);
+}
+
+@utility hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-premium);
+  }
+}
+
+@utility gradient-clinical {
+  background: linear-gradient(135deg, var(--color-clinical-500), var(--color-teal-500));
+}
+
+@utility gradient-clinical-dark {
+  background: linear-gradient(135deg, var(--color-clinical-700), var(--color-teal-700));
+}
+
+@utility text-gradient-clinical {
+  background: linear-gradient(135deg, var(--color-clinical-500), var(--color-teal-500));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
