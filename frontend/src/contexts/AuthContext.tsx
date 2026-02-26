@@ -1,22 +1,9 @@
-import { createContext, useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { api } from '@/services/api/client';
-import type { AuthResponse, LoginCredentials, RegisterData, User, Practice } from '@/types';
+import type { AuthResponse, LoginCredentials, RegisterData } from '@/types';
+import { AuthContext, type AuthState } from './auth-context';
 
-interface AuthState {
-  user: User | null;
-  practice: Practice | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-}
-
-interface AuthContextValue extends AuthState {
-  login: (credentials: LoginCredentials) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
-  logout: () => Promise<void>;
-  refreshUser: () => Promise<void>;
-}
-
-export const AuthContext = createContext<AuthContextValue | null>(null);
+export { AuthContext } from './auth-context';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
@@ -26,7 +13,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading: true,
   });
 
-  const refreshUser = useCallback(async () => {
+  useEffect(() => {
+    let cancelled = false;
+    api.get<AuthResponse>('/auth/me').then(
+      (data) => {
+        if (!cancelled) {
+          setState({
+            user: data.user,
+            practice: data.practice,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+        }
+      },
+      () => {
+        if (!cancelled) {
+          setState({
+            user: null,
+            practice: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+        }
+      }
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function refreshUser() {
     try {
       const data = await api.get<AuthResponse>('/auth/me');
       setState({
@@ -43,13 +59,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading: false,
       });
     }
-  }, []);
+  }
 
-  useEffect(() => {
-    refreshUser();
-  }, [refreshUser]);
-
-  const login = useCallback(async (credentials: LoginCredentials) => {
+  async function login(credentials: LoginCredentials) {
     const data = await api.post<AuthResponse>('/auth/login', credentials);
     setState({
       user: data.user,
@@ -57,9 +69,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: true,
       isLoading: false,
     });
-  }, []);
+  }
 
-  const register = useCallback(async (data: RegisterData) => {
+  async function register(data: RegisterData) {
     const response = await api.post<AuthResponse>('/auth/register', data);
     setState({
       user: response.user,
@@ -67,9 +79,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: true,
       isLoading: false,
     });
-  }, []);
+  }
 
-  const logout = useCallback(async () => {
+  async function logout() {
     await api.post('/auth/logout');
     setState({
       user: null,
@@ -77,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: false,
       isLoading: false,
     });
-  }, []);
+  }
 
   return (
     <AuthContext.Provider value={{ ...state, login, register, logout, refreshUser }}>
